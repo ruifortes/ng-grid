@@ -608,46 +608,88 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
     };
     self.lastSortedColumns = [];
     self.sortData = function(col, evt) {
-        if (evt && evt.shiftKey && self.config.sortInfo) {
-            var indx = self.config.sortInfo.columns.indexOf(col);
+
+        var indx = self.config.sortInfo.columns.indexOf(col);
+        //fill columns array and find index
+        angular.forEach(self.config.sortInfo.field, function(field, i) {
+
+
+        })
+
+
+        if (evt && evt.ctrlKey && self.config.sortInfo) {
             if (indx === -1) {
                 if (self.config.sortInfo.columns.length === 1) {
                     self.config.sortInfo.columns[0].sortPriority = 1;
                 }
                 self.config.sortInfo.columns.push(col);
-                col.sortPriority = self.config.sortInfo.columns.length;
+                if (self.config.sortInfo.columns.length > 1) {
+                    col.sortPriority = self.config.sortInfo.columns.length;
+                }
+
                 self.config.sortInfo.fields.push(col.field);
                 self.config.sortInfo.directions.push(col.sortDirection);
                 self.lastSortedColumns.push(col);
             } else {
-                self.config.sortInfo.directions[indx] = col.sortDirection;
+
+
+                self.config.sortInfo.columns.splice(indx, 1);
+                self.config.sortInfo.fields.splice(indx, 1);
+                self.config.sortInfo.directions.splice(indx, 1);
+
+                var colPriority = col.sortPriority
+
+                for (var i = self.lastSortedColumns.length - 1; i >= 0; i--) {
+                    var c = self.lastSortedColumns[i]
+                    if (col.index == c.index) {
+                        c.sortPriority = null;
+                        c.sortDirection = "";
+                        self.lastSortedColumns.splice(i, 1);
+                    } else if (c.sortPriority > colPriority) {
+                        c.sortPriority -= 1
+                    }
+                }
+
+                if (self.config.sortInfo.columns.length == 1) {
+                    self.config.sortInfo.columns[0].sortPriority = null
+                }
+
             }
         } else {
             var isArr = $.isArray(col);
-            self.config.sortInfo.columns.length = 0;
-            self.config.sortInfo.fields.length = 0;
-            self.config.sortInfo.directions.length = 0;
-            var push = function (c) {
-                self.config.sortInfo.columns.push(c);
-                self.config.sortInfo.fields.push(c.field);
-                self.config.sortInfo.directions.push(c.sortDirection);
-                self.lastSortedColumns.push(c);
-            };
-            if (isArr) {
-                angular.forEach(col, function (c, i) {
-                    c.sortPriority = i + 1;
-                    push(c);
-                });
+            if (indx === -1) {
+                self.config.sortInfo.columns.length = 0;
+                self.config.sortInfo.fields.length = 0;
+                self.config.sortInfo.directions.length = 0;
+                var push = function(c) {
+                    self.config.sortInfo.columns.push(c);
+                    self.config.sortInfo.fields.push(c.field);
+                    self.config.sortInfo.directions.push(c.sortDirection);
+                    self.lastSortedColumns.push(c);
+                };
+                if (isArr) {
+                    self.clearSortingData();
+                    angular.forEach(col, function(c, i) {
+                        c.sortPriority = i + 1;
+                        push(c);
+                    });
+                } else {
+                    self.clearSortingData(col);
+                    col.sortPriority = undefined;
+                    push(col);
+                }
             } else {
-                self.clearSortingData(col);
-                col.sortPriority = undefined;
-                push(col);
+                angular.forEach(self.config.sortInfo.columns, function(c, i) {
+                    if (col.index == c.index) {
+                        self.config.sortInfo.directions[i] = col.sortDirection
+                    }
+                });
             }
 
-            self.sortActual();
-            self.searchProvider.evalFilter();
-            $scope.$emit('ngGridEventSorted', self.config.sortInfo);
         }
+        self.sortActual();
+        self.searchProvider.evalFilter();
+        $scope.$emit('ngGridEventSorted', self.config.sortInfo);
     };
     self.sortColumnsInit = function() {
         if (self.config.sortInfo.columns) {
