@@ -1,143 +1,196 @@
 /// <reference path="footer.js" />
 /// <reference path="../services/SortService.js" />
 /// <reference path="../../lib/jquery-1.8.2.min" />
-var ngGrid = function($scope, options, sortService, domUtilityService, $filter, $templateCache, $utils, $timeout, $parse, $http, $q) {
+var ngGrid = function ($scope, options, sortService, domUtilityService, $filter, $templateCache, $utils, $timeout, $parse, $http, $q) {
     var defaults = {
         //Define an aggregate template to customize the rows when grouped. See github wiki for more details.
         aggregateTemplate: undefined,
+
         //Callback for when you want to validate something after selection.
         afterSelectionChange: function() {
         },
+
         /* Callback if you want to inspect something before selection,
-         return false if you want to cancel the selection. return true otherwise. 
-         If you need to wait for an async call to proceed with selection you can 
-         use rowItem.changeSelection(event) method after returning false initially. 
-         Note: when shift+ Selecting multiple items in the grid this will only get called
-         once and the rowItem will be an array of items that are queued to be selected. */
+        return false if you want to cancel the selection. return true otherwise.
+        If you need to wait for an async call to proceed with selection you can
+        use rowItem.changeSelection(event) method after returning false initially.
+        Note: when shift+ Selecting multiple items in the grid this will only get called
+        once and the rowItem will be an array of items that are queued to be selected. */
         beforeSelectionChange: function() {
             return true;
         },
+
         //checkbox templates.
         checkboxCellTemplate: undefined,
         checkboxHeaderTemplate: undefined,
+
         //definitions of columns as an array [], if not defines columns are auto-generated. See github wiki for more details.
         columnDefs: undefined,
+
         //*Data being displayed in the grid. Each item in the array is mapped to a row being displayed.
         data: [],
+
         //Data updated callback, fires every time the data is modified from outside the grid.
         dataUpdated: function() {
         },
+
         //Enables cell editing.
         enableCellEdit: false,
+
         //Enables cell editing on focus
         enableCellEditOnFocus: false,
+
         //Enables cell selection.
         enableCellSelection: false,
+
         //Enable or disable resizing of columns
         enableColumnResize: false,
+
         //Enable or disable reordering of columns
         enableColumnReordering: false,
+
         //Enable or disable HEAVY column virtualization. This turns off selection checkboxes and column pinning and is designed for spreadsheet-like data.
         enableColumnHeavyVirt: false,
+
         //Enables the server-side paging feature
         enablePaging: false,
+
         //Enable column pinning
         enablePinning: false,
+
         //To be able to have selectable rows in grid.
         enableRowSelection: true,
+
         //Enables or disables sorting in grid.
         enableSorting: true,
+
         //Enables or disables text highlighting in grid by adding the "unselectable" class (See CSS file)
         enableHighlighting: false,
+
         // string list of properties to exclude when auto-generating columns.
         excludeProperties: [],
+
         /* filterOptions -
-         filterText: The text bound to the built-in search box. 
+         filterText: The text bound to the built-in search box.
          useExternalFilter: Bypass internal filtering if you want to roll your own filtering mechanism but want to use builtin search box.
          */
+
         filterOptions: {
             filterText: "",
             useExternalFilter: false
         },
+
         //Defining the height of the footer in pixels.
         footerRowHeight: 55,
+
         // the template for the column menu and filter, including the button.
         footerTemplate: undefined,
-        // Enables a trade off between refreshing the contents of the grid continuously while scrolling (behaviour when true) 
+
+        // Enables a trade off between refreshing the contents of the grid continuously while scrolling (behaviour when true)
         // and keeping the scroll bar button responsive at the expense of refreshing grid contents (behaviour when false)
         forceSyncScrolling: true,
+
         //Initial fields to group data by. Array of field names, not displayName.
         groups: [],
+
         // set the initial state of aggreagate grouping. "true" means they will be collapsed when grouping changes, "false" means they will be expanded by default.
         groupsCollapsedByDefault: true,
+
         //The height of the header row in pixels.
         headerRowHeight: 30,
+
         //Define a header row template for further customization. See github wiki for more details.
         headerRowTemplate: undefined,
-        /*Enables the use of jquery UI reaggable/droppable plugin. requires jqueryUI to work if enabled. 
+
+        /*Enables the use of jquery UI reaggable/droppable plugin. requires jqueryUI to work if enabled.
          Useful if you want drag + drop but your users insist on crappy browsers. */
         jqueryUIDraggable: false,
+
         //Enable the use jqueryUIThemes
         jqueryUITheme: false,
+
         //Prevent unselections when in single selection mode.
         keepLastSelected: true,
-        /*Maintains the column widths while resizing. 
+
+        /*Maintains the column widths while resizing.
          Defaults to true when using *'s or undefined widths. Can be ovverriden by setting to false.*/
         maintainColumnRatios: undefined,
+
         // the template for the column menu and filter, including the button.
         menuTemplate: undefined,
+
         //Set this to false if you only want one item selected at a time
         multiSelect: true,
+
         // pagingOptions -
         pagingOptions: {
             // pageSizes: list of available page sizes.
             pageSizes: [250, 500, 1000],
-            //pageSize: currently selected page size. 
+            //pageSize: currently selected page size.
             pageSize: 250,
             //currentPage: the uhm... current page.
             currentPage: 1
         },
+
         //the selection checkbox is pinned to the left side of the viewport or not.
         pinSelectionCheckbox: false,
+
         //Array of plugin functions to register in ng-grid
         plugins: [],
+
         //User defined unique ID field that allows for better handling of selections and for server-side paging
         primaryKey: undefined,
+
         //Row height of rows in grid.
         rowHeight: 30,
+
         //Define a row template to customize output. See github wiki for more details.
         rowTemplate: undefined,
+
         //all of the items selected in the grid. In single select mode there will only be one item in the array.
         selectedItems: [],
+
         //Disable row selections by clicking on the row and only when the checkbox is clicked.
         selectWithCheckboxOnly: false,
-        /*Enables menu to choose which columns to display and group by. 
-         If both showColumnMenu and showFilter are false the menu button will not display.*/
+
+        /*Enables menu to choose which columns to display and group by.
+        If both showColumnMenu and showFilter are false the menu button will not display.*/
         showColumnMenu: false,
-        /*Enables display of the filterbox in the column menu. 
-         If both showColumnMenu and showFilter are false the menu button will not display.*/
+
+        /*Enables display of the filterbox in the column menu.
+        If both showColumnMenu and showFilter are false the menu button will not display.*/
         showFilter: false,
+
         //Show or hide the footer alltogether the footer is enabled by default
         showFooter: false,
+
         //Show the dropzone for drag and drop grouping
         showGroupPanel: false,
+
         //Row selection check boxes appear as the first column.
         showSelectionCheckbox: false,
-        /*Define a sortInfo object to specify a default sorting state. 
-         You can also observe this variable to utilize server-side sorting (see useExternalSorting).
-         Syntax is sortinfo: { fields: ['fieldName1',' fieldName2'], direction: 'ASC'/'asc' || 'desc'/'DESC'}*/
+
+        /*Define a sortInfo object to specify a default sorting state.
+        You can also observe this variable to utilize server-side sorting (see useExternalSorting).
+        Syntax is sortinfo: { fields: ['fieldName1',' fieldName2'], direction: 'ASC'/'asc' || 'desc'/'DESC'}*/
         sortInfo: {fields: [], columns: [], directions: []},
+
         //Set the tab index of the Vieport.
         tabIndex: -1,
-        //totalServerItems: Total items are on the server. 
+
+        //totalServerItems: Total items are on the server.
         totalServerItems: 0,
-        /*Prevents the internal sorting from executing. 
-         The sortInfo object will be updated with the sorting information so you can handle sorting (see sortInfo)*/
+
+        /*Prevents the internal sorting from executing.
+        The sortInfo object will be updated with the sorting information so you can handle sorting (see sortInfo)*/
         useExternalSorting: false,
+
         /*i18n language support. choose from the installed or included languages, en, fr, sp, etc...*/
         i18n: 'en',
+
         //the threshold in rows to force virtualization on
         virtualizationThreshold: 50,
+
         // Don't handle tabs, so they can be used to navigate between controls.
         noTabInterference: false
     },
@@ -557,7 +610,7 @@ var ngGrid = function($scope, options, sortService, domUtilityService, $filter, 
         domUtilityService.BuildStyles($scope, self, true);
     };
     self.sortColumns = [];
-    self.sort = function(col, evt) {//don't pass sortInfo as parameter 
+    self.sort = function(col, evt) {//don't pass sortInfo as parameter
         var len = self.config.sortInfo.fields.length;
         var i,c;
         if (len === 0 && col == null) {
@@ -577,7 +630,7 @@ var ngGrid = function($scope, options, sortService, domUtilityService, $filter, 
             var indx = self.sortColumns.indexOf(col);
 
             if (evt && evt.ctrlKey && self.config.sortInfo) {
-                if (indx === -1) { //add new column 
+                if (indx === -1) { //add new column
                     if (len === 1) { //previous single column woudn't have any priority defined
                         self.sortColumns[0].sortPriority = 1;
                     }
