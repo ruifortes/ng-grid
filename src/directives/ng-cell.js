@@ -5,7 +5,7 @@
             return {
                 pre: function($scope, iElement) {
                     var html;
-                    var cellTemplate = $scope.col.cellTemplate.replace(COL_FIELD, 'row.entity.' + $scope.col.field);
+                    var cellTemplate = $scope.col.cellTemplate.replace(COL_FIELD, $scope.col.field ? 'row.entity.' + $scope.col.field : "");
 
                     if ($scope.col.enableCellEdit) {
                         html =  $scope.col.cellEditTemplate;
@@ -29,7 +29,7 @@
                     if ($scope.enableCellSelection) {
                         $scope.domAccessProvider.selectionHandlers($scope, iElement);
                     }
-                    
+
                     $scope.$on('ngGridEventDigestCell', function() {
                         domUtilityService.digest($scope);
                     });
@@ -37,6 +37,6 @@
             };
         }
     };
-    
+
     return ngCell;
 }]);

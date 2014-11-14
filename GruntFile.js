@@ -24,7 +24,7 @@
         src = src.replace(/\s{2,}(\r|\n|\s){2,}$/gm, '');
         return src;
     };
-    
+
     grunt.registerMultiTask('concat', 'Concatenate files.', function () {
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
@@ -86,7 +86,7 @@
             'src/filters/*.js',
             'src/services/*.js',
             'src/classes/*.js',
-            
+
             'src/directives/*.js',
             'src/i18n/*.js',
             '<%= ngtemplates.ngGrid.dest %>'
@@ -151,8 +151,8 @@
         },
         ngtemplates: {
             ngGrid: {
-                options: { base: 'src/templates' },
-                src: ['src/templates/**.html'],
+                cwd: 'src/templates',
+                src: ['**.html'],
                 dest: 'build/templates.js'
             }
         },

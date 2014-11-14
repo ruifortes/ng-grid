@@ -83,30 +83,30 @@
     };
     //#endregion
     // the core sorting logic trigger
-    sortService.sortData = function(sortInfo, data /*datasource*/) {
+    sortService.sortData = function(columns, data /*datasource*/) {
         // first make sure we are even supposed to do work
-        if (!data || !sortInfo) {
+        if(!data || !columns || columns.length === 0) {
             return;
         }
-        var l = sortInfo.fields.length,
-            order = sortInfo.fields,
-            col,
-            direction,
-            // IE9 HACK.... omg, I can't reference data array within the sort fn below. has to be a separate reference....!!!!
-            d = data.slice(0);
+        var l = columns.length,
+                order = columns.fields,
+                col,
+                direction,
+                // IE9 HACK.... omg, I can't reference data array within the sort fn below. has to be a separate reference....!!!!
+                d = data.slice(0);
         //now actually sort the data
-        data.sort(function (itemA, itemB) {
+        data.sort(function(itemA, itemB) {
             var tem = 0,
                 indx = 0,
                 sortFn;
             while (tem === 0 && indx < l) {
                 // grab the metadata for the rest of the logic
-                col = sortInfo.columns[indx];
-                direction = sortInfo.directions[indx];
+                col = columns[indx];
+                direction = columns[indx].sortDirection;
                 sortFn = sortService.getSortFn(col, d);
-                
-                var propA = $parse(order[indx])(itemA);
-                var propB = $parse(order[indx])(itemB);
+
+                var propA = $parse(col.field)(itemA);
+                var propB = $parse(col.field)(itemB);
                 // we want to allow zero values to be evaluated in the sort function
                 if ((!propA && propA !== 0) || (!propB && propB !== 0)) {
                     // we want to force nulls and such to the bottom when we sort... which effectively is "greater than"
